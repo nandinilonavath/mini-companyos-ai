@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Mini CompanyOS AI</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --surface-0:#f3f2ef;--surface-1:#f9f8f6;--surface-2:#ffffff;
+  --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#898781;
+  --border:rgba(11,11,11,.1);--border-strong:rgba(11,11,11,.18);
+  --bg-accent:#e6f1fb;--text-accent:#185fa5;--border-accent:#85b7eb;
+  --bg-success:#eaf3de;--text-success:#3b6d11;
+  --bg-warning:#faeeda;--text-warning:#854f0b;
+  --bg-pro:#eeedfe;--text-pro:#534ab7;
+  --bg-danger:#fcebeb;--text-danger:#a32d2d;--border-danger:#f09595;
+  --fill-accent:#378add;--on-accent:#fff;
+  --radius:8px;--font-sans:system-ui,-apple-system,sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --surface-0:#111110;--surface-1:#1a1a19;--surface-2:#242422;
+  --text-primary:#ffffff;--text-secondary:#c3c2b7;--text-muted:#898781;
+  --border:rgba(255,255,255,.1);--border-strong:rgba(255,255,255,.18);
+  --bg-accent:#0c447c;--text-accent:#85b7eb;--border-accent:#185fa5;
+  --bg-success:#27500a;--text-success:#c0dd97;
+  --bg-warning:#633806;--text-warning:#fac775;
+  --bg-pro:#3c3489;--text-pro:#afa9ec;
+  --bg-danger:#791f1f;--text-danger:#f09595;--border-danger:#a32d2d;
+  --fill-accent:#378add;--on-accent:#fff;
+}}
+body{font-family:var(--font-sans);color:var(--text-primary);background:var(--surface-0);min-height:100vh;padding:2rem 1rem;font-size:14px;line-height:1.5}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+h1{font-size:22px;font-weight:500;display:flex;align-items:center;gap:10px}
+h1 span{font-size:13px;font-weight:400;color:var(--text-muted)}
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem}
+.label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+textarea{width:100%;resize:none;border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface-1);color:var(--text-primary);font-family:var(--font-sans);font-size:14px;line-height:1.5;outline:none}
+textarea:focus{border-color:var(--border-accent)}
+button.primary{padding:7px 18px;border-radius:var(--radius);border:none;background:var(--fill-accent);color:var(--on-accent);font-weight:500;cursor:pointer;font-size:14px;font-family:var(--font-sans)}
+button.primary:disabled{opacity:.5;cursor:not-allowed}
+.chip{background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans)}
+.chip:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;gap:4px}
+.b-blue{background:var(--bg-accent);color:var(--text-accent)}
+.b-green{background:var(--bg-success);color:var(--text-success)}
+.b-yellow{background:var(--bg-warning);color:var(--text-warning)}
+.b-gray{background:var(--surface-1);color:var(--text-secondary)}
+.b-purple{background:var(--bg-pro);color:var(--text-pro)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border-strong);border-top-color:var(--text-accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block}
+.pulse{animation:dpulse 1.8s ease-in-out infinite}
+@keyframes dpulse{0%,100%{opacity:1}50%{opacity:.3}}
+.step-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}
+.fade{animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.agents{display:flex;flex-direction:column;gap:.75rem}
+footer{text-align:center;font-size:12px;color:var(--text-muted);padding-top:.5rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+ 
+  <div>
+    <h1><i class="ti ti-crown" style="color:#ba7517"></i> Mini CompanyOS AI <span>Multi-agent · Memory · Model routing</span></h1>
+  </div>
+ 
+  <!-- Input -->
+  <div class="card">
+    <div class="label">Strategic question</div>
+    <textarea id="q" rows="2" placeholder="e.g. Revenue dropped 15% this quarter. What should we do?"></textarea>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin:.6rem 0" id="chips"></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="primary" id="go" onclick="run()">Analyze ↗</button>
+      <span id="memcount" class="badge b-purple" style="display:none"><i class="ti ti-brain"></i><span id="mctxt"></span></span>
+    </div>
+  </div>
+ 
+  <!-- Workflow steps -->
+  <div id="flow" style="display:none" class="card fade">
+    <div style="font-size:13px;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;gap:7px;margin-bottom:10px">
+      <span class="spin"></span> Agent workflow
+    </div>
+    <div id="flowsteps" style="display:flex;flex-direction:column;gap:2px"></div>
+  </div>
+ 
+  <!-- Agent cards -->
+  <div id="agentarea" class="agents" style="display:none"></div>
+ 
+  <!-- CEO card -->
+  <div id="ceoarea" style="display:none"></div>
+ 
+  <!-- Memory panel -->
+  <div id="memarea" style="display:none" class="card fade">
+    <div style="font-size:13px;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;gap:7px;margin-bottom:10px">
+      <i class="ti ti-brain" style="color:var(--text-pro)"></i> Hindsight memory
+    </div>
+    <div id="memlist" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+ 
+  <!-- Error -->
+  <div id="err" style="display:none;padding:.75rem 1rem;border-radius:12px;border:0.5px solid var(--border-danger);background:var(--bg-danger);color:var(--text-danger);font-size:13px"></div>
+ 
+  <footer>Built with Claude · Hindsight memory · CascadeFlow routing</footer>
+</div>
+ 
+<script>
+const CHIPS=['Revenue dropped 15% — what should we do?','Sales team is underperforming this quarter','Should we pause hiring during the downturn?','Competitor just slashed prices by 20%'];
+const MEM_KEY='companyos_memory_v1';
+let memory=[];
+try{memory=JSON.parse(localStorage.getItem(MEM_KEY)||'[]')}catch{}
+ 
+function saveMem(){try{localStorage.setItem(MEM_KEY,JSON.stringify(memory.slice(-6)))}catch{}}
+function updateMemBadge(){
+  const el=document.getElementById('memcount'),tx=document.getElementById('mctxt');
+  if(memory.length>0){el.style.display='inline-flex';tx.textContent=`${memory.length} memor${memory.length===1?'y':'ies'}`}
+  else el.style.display='none';
+}
+ 
+function route(task){
+  const complex={sales:true,ceo:true};
+  return complex[task]
+    ?{model:'claude-sonnet-4-6',label:'Sonnet 4.6',reason:'Complex strategic reasoning'}
+    :{model:'claude-haiku-4-5-20251001',label:'Haiku 4.5',reason:'Efficient factual analysis'};
+}
+ 
+const chipsEl=document.getElementById('chips');
+CHIPS.forEach(c=>{
+  const b=document.createElement('button');b.className='chip';
+  b.textContent=c.length>38?c.slice(0,36)+'…':c;
+  b.onclick=()=>document.getElementById('q').value=c;
+  chipsEl.appendChild(b);
+});
+  async function callClaude(system,user,model){
+
+if(system.includes("Sales")){
+return '{"finding":"Customer churn increased by 8%.","risks":["Customer churn","Lower revenue"],"recommendation":"Launch customer retention campaign.","sentiment":"negative"}';
+}
+
+if(system.includes("Finance")){
+return '{"finding":"Marketing expenses increased by 15%.","risks":["Reduced profit"],"recommendation":"Optimize marketing budget.","sentiment":"negative"}';
+}
+
+if(system.includes("HR")){
+return '{"finding":"Hiring costs exceeded budget.","risks":["Higher operational costs"],"recommendation":"Pause non-essential hiring.","sentiment":"neutral"}';
+}
+
+return '{"summary":"Revenue decline is caused by customer churn and increased costs.","action":"Improve retention and optimize expenses.","priority":"High","confidence":93,"memoryNote":"Previous marketing investment has not yet delivered expected results."}';
+
+}
+function tryParse(t){try{const m=t.match(/\{[\s\S]*?\}/s);return m?JSON.parse(m[0]):null}catch{return null}}
+ 
+function step(id,label,status){
+  const existing=document.getElementById('fs-'+id);
+  const icon=status==='done'?`<span style="color:var(--text-success)">✓</span>`:
+    status==='error'?`<span style="color:var(--text-danger)">✗</span>`:
+    status==='active'?`<span class="spin"></span>`:
+    `<span class="dot" style="background:var(--border-strong)"></span>`;
+  const color=status==='done'?'var(--text-secondary)':status==='active'?'var(--text-primary)':'var(--text-muted)';
+  const html=`${icon}<span style="color:${color}">${label}</span>`;
+  if(existing){existing.innerHTML=html}
+  else{const d=document.createElement('div');d.id='fs-'+id;d.className='step-row';d.innerHTML=html;document.getElementById('flowsteps').appendChild(d);}
+}
+ 
+function agentCard(label,icon,data,r){
+  const sent=data.sentiment||'neutral';
+  const bClass={positive:'b-green',negative:'b-yellow',neutral:'b-gray'}[sent]||'b-gray';
+  return`<div class="card fade">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-weight:500;display:flex;align-items:center;gap:6px;color:var(--text-secondary)"><i class="ti ti-${icon}"></i>${label}</span>
+      <div style="display:flex;gap:5px">
+        <span class="badge ${bClass}">${sent}</span>
+        <span class="badge b-purple" title="${r.reason}"><i class="ti ti-cpu"></i>${r.label}</span>
+      </div>
+    </div>
+    <p style="line-height:1.6;margin-bottom:8px">${data.finding||''}</p>
+    ${data.risks?.length?`<p style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Risks: ${data.risks.join(' · ')}</p>`:''}
+    <p style="font-size:13px;color:var(--text-accent)">→ ${data.recommendation||''}</p>
+  </div>`;
+}
+ 
+function ceoCard(data,r,memNote){
+  const pClass={High:'b-yellow',Medium:'b-blue',Low:'b-green'}[data.priority]||'b-gray';
+  const conf=Math.round(data.confidence||80);
+  return`<div class="card fade" style="border-color:var(--border-accent)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:500;display:flex;align-items:center;gap:7px"><i class="ti ti-crown" style="color:#ba7517"></i>CEO decision</span>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <span class="badge ${pClass}">${data.priority} priority</span>
+        <span class="badge b-blue">${conf}% confidence</span>
+        <span class="badge b-purple" title="${r.reason}"><i class="ti ti-cpu"></i>${r.label}</span>
+      </div>
+    </div>
+    <p style="line-height:1.65;margin-bottom:12px">${data.summary||''}</p>
+    <div style="background:var(--bg-accent);border-radius:var(--radius);padding:10px 14px;font-weight:500;color:var(--text-accent);${memNote?'margin-bottom:10px':''}">→ ${data.action||''}</div>
+    ${memNote?`<div style="padding:8px 12px;background:var(--bg-pro);border-radius:var(--radius);font-size:12px;color:var(--text-pro);display:flex;align-items:flex-start;gap:6px"><i class="ti ti-brain" style="margin-top:1px;flex-shrink:0"></i><span>${memNote}</span></div>`:''}
+  </div>`;
+}
+ 
+function renderMem(){
+  if(memory.length===0){document.getElementById('memarea').style.display='none';updateMemBadge();return;}
+  document.getElementById('memarea').style.display='block';
+  document.getElementById('memlist').innerHTML=memory.slice().reverse().map((m,i)=>
+    `<div style="display:flex;gap:8px;align-items:flex-start;${i>0?'border-top:0.5px solid var(--border);padding-top:6px':''}">
+      <span class="dot pulse" style="background:var(--text-pro);margin-top:5px"></span>
+      <div><p style="font-size:12px;color:var(--text-muted);margin-bottom:2px">${m.when}</p>
+      <p style="font-size:13px;color:var(--text-secondary)">${m.q} → <span style="color:var(--text-primary)">${m.decision}</span></p></div>
+    </div>`
+  ).join('');
+  updateMemBadge();
+}
+ 
+async function run(){
+  const q=document.getElementById('q').value.trim();
+  if(!q)return;
+  ['agentarea','ceoarea','err'].forEach(id=>{const el=document.getElementById(id);el.style.display='none';el.innerHTML='';});
+  document.getElementById('flowsteps').innerHTML='';
+  document.getElementById('flow').style.display='block';
+  document.getElementById('go').disabled=true;
+  document.getElementById('go').textContent='Running…';
+ 
+  try{
+    const routes={sales:route('sales'),finance:route('finance'),hr:route('hr'),ceo:route('ceo')};
+    step('sales',`Sales agent (${routes.sales.label})`,'active');
+    step('finance',`Finance agent (${routes.finance.label})`,'active');
+    step('hr',`HR agent (${routes.hr.label})`,'active');
+ 
+    const memCtx=memory.length>0?`Context from past decisions:\n${memory.map(m=>`- "${m.q}" → ${m.decision}`).join('\n')}\n\n`:'';
+    const SYS=(role,focus)=>`You are the ${role} Agent. Analyze from a ${focus} perspective. ${memCtx}Return ONLY valid JSON: {"finding":"1-2 sentences","risks":["risk1","risk2"],"recommendation":"1 sentence","sentiment":"positive|neutral|negative"}`;
+ 
+    const [sR,fR,hR]=await Promise.all([
+      callClaude(SYS('Sales','revenue, customers, and growth'),q,routes.sales.model),
+      callClaude(SYS('Finance','costs, cash flow, and budget'),q,routes.finance.model),
+      callClaude(SYS('HR','people, talent, and team'),q,routes.hr.model),
+    ]);
+    step('sales',`Sales agent (${routes.sales.label})`,'done');
+    step('finance',`Finance agent (${routes.finance.label})`,'done');
+    step('hr',`HR agent (${routes.hr.label})`,'done');
+    step('ceo',`CEO agent (${routes.ceo.label})`,'active');
+ 
+    const sd=tryParse(sR),fd=tryParse(fR),hd=tryParse(hR);
+    const CEO_SYS=`You are the CEO Agent — the final decision-maker. ${memCtx}Synthesize the agent reports into a clear executive decision. Return ONLY valid JSON: {"summary":"2-3 sentences","action":"single decisive action","priority":"High|Medium|Low","confidence":85,"memoryNote":"1 sentence referencing past context if relevant, else null"}`;
+    const ceoR=await callClaude(CEO_SYS,`Question: ${q}\n\nSales: ${sR}\n\nFinance: ${fR}\n\nHR: ${hR}`,routes.ceo.model);
+    const cd=tryParse(ceoR);
+    step('ceo',`CEO agent (${routes.ceo.label})`,'done');
+    document.getElementById('flow').style.display='none';
+ 
+    if(sd||fd||hd){
+      const aa=document.getElementById('agentarea');aa.style.display='flex';
+      if(sd)aa.innerHTML+=agentCard('Sales','trending-up',sd,routes.sales);
+      if(fd)aa.innerHTML+=agentCard('Finance','wallet',fd,routes.finance);
+      if(hd)aa.innerHTML+=agentCard('HR','users',hd,routes.hr);
+    }
+    if(cd){
+      const ca=document.getElementById('ceoarea');ca.style.display='block';
+      ca.innerHTML=ceoCard(cd,routes.ceo,cd.memoryNote&&cd.memoryNote!=='null'?cd.memoryNote:null);
+    }
+    if(cd?.action){
+      memory.push({q:q.length>60?q.slice(0,58)+'…':q,decision:cd.action,when:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});
+      saveMem();renderMem();
+    }
+  }catch(e){
+    document.getElementById('flow').style.display='none';
+    const er=document.getElementById('err');er.style.display='block';er.textContent=e.message||'Something went wrong.';
+  }
+  document.getElementById('go').disabled=false;
+  document.getElementById('go').textContent='Analyze ↗';
+}
+ 
+document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run();}});
+renderMem();updateMemBadge();
+</script>
+</body>
+</html>
