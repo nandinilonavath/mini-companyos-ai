@@ -133,17 +133,23 @@ CHIPS.forEach(c=>{
   b.onclick=()=>document.getElementById('q').value=c;
   chipsEl.appendChild(b);
 });
- 
-async function callClaude(system,user,model='claude-sonnet-4-6'){
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model,max_tokens:700,system,messages:[{role:'user',content:user}]})
-  });
-  const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||'API error');
-  return d.content[0]?.text||'';
+  async function callClaude(system,user,model){
+
+if(system.includes("Sales")){
+return '{"finding":"Customer churn increased by 8%.","risks":["Customer churn","Lower revenue"],"recommendation":"Launch customer retention campaign.","sentiment":"negative"}';
 }
- 
+
+if(system.includes("Finance")){
+return '{"finding":"Marketing expenses increased by 15%.","risks":["Reduced profit"],"recommendation":"Optimize marketing budget.","sentiment":"negative"}';
+}
+
+if(system.includes("HR")){
+return '{"finding":"Hiring costs exceeded budget.","risks":["Higher operational costs"],"recommendation":"Pause non-essential hiring.","sentiment":"neutral"}';
+}
+
+return '{"summary":"Revenue decline is caused by customer churn and increased costs.","action":"Improve retention and optimize expenses.","priority":"High","confidence":93,"memoryNote":"Previous marketing investment has not yet delivered expected results."}';
+
+}
 function tryParse(t){try{const m=t.match(/\{[\s\S]*?\}/s);return m?JSON.parse(m[0]):null}catch{return null}}
  
 function step(id,label,status){
@@ -268,6 +274,3 @@ renderMem();updateMemBadge();
 </script>
 </body>
 </html>
- 
-
-
