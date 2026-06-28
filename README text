@@ -1,0 +1,20 @@
+# Mini CompanyOS AI
+
+Multi-agent AI decision platform for business leaders.
+
+## Features
+- 3 specialized agents (Sales, Finance, HR) running in parallel
+- CEO agent that synthesizes all reports into a final decision
+- Hindsight memory — remembers past decisions across sessions
+- CascadeFlow model routing — smart model selection per task
+
+## Live Demo
+[Click here to try it](https://YOUR_USERNAME.github.io/mini-companyos-ai/mini_companyos_ai.html)
+
+## How to run locally
+Just open `mini_companyos_ai.html` in any browser. No install needed.
+
+## Built with
+- Claude API (Anthropic)
+- Vanilla HTML/CSS/JS
+- localStorage for memory persistence
